@@ -2,38 +2,62 @@
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<title>Полуфабрикаты</title>
+<title>Ulgurji / Опт</title>
 <style>
 body{font-family:system-ui,sans-serif;margin:0;padding:12px 12px 90px;background:var(--tg-theme-bg-color,#fff);color:var(--tg-theme-text-color,#000)}
-.card{display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:10px;border-radius:12px;background:var(--tg-theme-secondary-bg-color,#f2f2f2)}
+.card{padding:12px;margin-bottom:10px;border-radius:12px;background:var(--tg-theme-secondary-bg-color,#f2f2f2)}
+.row{display:flex;align-items:center;gap:12px}
 .emoji{font-size:34px}.info{flex:1}.price{opacity:.7;font-size:14px}
+.comp{font-size:13px;opacity:.8;margin-top:8px;display:none}
+.i{border:0;background:none;font-size:18px;color:inherit}
 .qty{display:flex;align-items:center;gap:10px}
-.qty button{width:34px;height:34px;border:0;border-radius:50%;font-size:20px;background:var(--tg-theme-button-color,#2481cc);color:var(--tg-theme-button-text-color,#fff)}
+.qty button.q{width:34px;height:34px;border:0;border-radius:50%;font-size:20px;background:var(--tg-theme-button-color,#2481cc);color:var(--tg-theme-button-text-color,#fff)}
 input{width:100%;box-sizing:border-box;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #8884;font-size:16px}
+.min{opacity:.7;font-size:14px;margin-bottom:10px}
 </style></head><body>
-<h2>🥟 Наши полуфабрикаты</h2>
+<h2 id="title"></h2>
+<div class="min" id="min"></div>
 <div id="list"></div>
-<h3>Доставка</h3>
-<input id="phone" type="tel" placeholder="Телефон">
-<input id="address" placeholder="Адрес доставки">
+<h3 id="dl"></h3>
+<input id="phone" type="tel">
+<input id="address">
 <script>
 const tg=Telegram.WebApp;tg.ready();tg.expand();
-let products=[],cart={};
+const L=new URLSearchParams(location.search).get('lang')==='uz'?'uz':'ru';
+const S={
+ ru:{title:'🥟 Оптовый каталог',min:'Минимальный заказ: ',cur:'сум',dl:'Доставка',phone:'Телефон',addr:'Адрес доставки',order:'Заказать — ',need:'Укажите телефон и адрес',minErr:'Минимальный заказ: '},
+ uz:{title:'🥟 Ulgurji katalog',min:'Minimal buyurtma: ',cur:"so'm",dl:'Yetkazib berish',phone:'Telefon',addr:'Yetkazib berish manzili',order:'Buyurtma — ',need:'Telefon va manzilni kiriting',minErr:'Minimal buyurtma: '}
+}[L];
+document.getElementById('title').textContent=S.title;
+document.getElementById('dl').textContent=S.dl;
+document.getElementById('phone').placeholder=S.phone;
+document.getElementById('address').placeholder=S.addr;
+try{phone.value=localStorage.getItem('ph')||'';address.value=localStorage.getItem('ad')||''}catch(e){}
+let products=[],minOrder=0,cart={};
 const fmt=n=>n.toLocaleString('ru').replace(/ /g,' ');
-fetch('products.json').then(r=>r.json()).then(p=>{products=p;render()});
+fetch('products.json').then(r=>r.json()).then(d=>{products=d.products;minOrder=d.min_order||0;
+  document.getElementById('min').textContent=S.min+fmt(minOrder)+' '+S.cur;render()});
+function total(){return products.reduce((s,p)=>s+p.price*(cart[p.id]||0),0)}
 function render(){
   document.getElementById('list').innerHTML=products.map(p=>`
-  <div class="card"><div class="emoji">${p.emoji}</div>
-  <div class="info"><b>${p.name}</b><div class="price">${fmt(p.price)} сум</div></div>
-  <div class="qty"><button onclick="chg(${p.id},-1)">−</button><span>${cart[p.id]||0}</span><button onclick="chg(${p.id},1)">+</button></div></div>`).join('');
-  const total=products.reduce((s,p)=>s+p.price*(cart[p.id]||0),0);
-  if(total>0){tg.MainButton.setText('Заказать — '+fmt(total)+' сум');tg.MainButton.show()}else tg.MainButton.hide();
+  <div class="card"><div class="row"><div class="emoji">${p.emoji}</div>
+  <div class="info"><b>${p['name_'+L]}</b> <button class="i" onclick="tgl(${p.id})">ℹ️</button>
+  <div class="price">${fmt(p.price)} ${S.cur} / ${p['unit_'+L]}</div></div>
+  <div class="qty"><button class="q" onclick="chg(${p.id},-1)">−</button><span>${cart[p.id]||0}</span><button class="q" onclick="chg(${p.id},1)">+</button></div></div>
+  <div class="comp" id="c${p.id}">${p['comp_'+L]}</div></div>`).join('');
+  open_.forEach(id=>{const e=document.getElementById('c'+id);if(e)e.style.display='block'});
+  const t=total();
+  if(t>0){tg.MainButton.setText(S.order+fmt(t)+' '+S.cur);tg.MainButton.show()}else tg.MainButton.hide();
 }
+const open_=new Set();
+function tgl(id){open_.has(id)?open_.delete(id):open_.add(id);const e=document.getElementById('c'+id);e.style.display=open_.has(id)?'block':'none'}
 function chg(id,d){cart[id]=Math.max(0,(cart[id]||0)+d);render()}
 tg.MainButton.onClick(()=>{
-  const phone=document.getElementById('phone').value.trim(),address=document.getElementById('address').value.trim();
-  if(!phone||!address){tg.showAlert('Укажите телефон и адрес');return}
-  const items=products.filter(p=>cart[p.id]).map(p=>({name:p.name,price:p.price,qty:cart[p.id]}));
-  tg.sendData(JSON.stringify({items,phone,address}));
+  const ph=phone.value.trim(),ad=address.value.trim();
+  if(!ph||!ad){tg.showAlert(S.need);return}
+  if(total()<minOrder){tg.showAlert(S.minErr+fmt(minOrder)+' '+S.cur);return}
+  try{localStorage.setItem('ph',ph);localStorage.setItem('ad',ad)}catch(e){}
+  const items=products.filter(p=>cart[p.id]).map(p=>({id:p.id,name_ru:p.name_ru,name_uz:p.name_uz,unit_ru:p.unit_ru,unit_uz:p.unit_uz,price:p.price,qty:cart[p.id]}));
+  tg.sendData(JSON.stringify({items,phone:ph,address:ad}));
 });
 </script></body></html>

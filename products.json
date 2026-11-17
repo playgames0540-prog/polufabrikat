@@ -1,8 +1,17 @@
-[
-  {"id":1,"name":"Пельмени домашние (1 кг)","price":45000,"emoji":"🥟"},
-  {"id":2,"name":"Манты (1 кг)","price":50000,"emoji":"🥟"},
-  {"id":3,"name":"Вареники с картошкой (1 кг)","price":38000,"emoji":"🥟"},
-  {"id":4,"name":"Котлеты куриные (10 шт)","price":42000,"emoji":"🍗"},
-  {"id":5,"name":"Самса замороженная (6 шт)","price":36000,"emoji":"🥐"},
-  {"id":6,"name":"Лагман-лапша (500 г)","price":20000,"emoji":"🍜"}
-]
+{
+  "min_order": 500000,
+  "products": [
+    {"id":1,"emoji":"🥟","name_ru":"Пельмени домашние","name_uz":"Uy pelmenilari","unit_ru":"кор. (10 кг)","unit_uz":"quti (10 kg)","price":380000,
+     "comp_ru":"говядина, лук, мука, соль, специи","comp_uz":"mol go'shti, piyoz, un, tuz, ziravorlar"},
+    {"id":2,"emoji":"🥟","name_ru":"Манты","name_uz":"Manti","unit_ru":"кор. (10 кг)","unit_uz":"quti (10 kg)","price":430000,
+     "comp_ru":"баранина, лук, мука, соль","comp_uz":"qo'y go'shti, piyoz, un, tuz"},
+    {"id":3,"emoji":"🥟","name_ru":"Вареники с картошкой","name_uz":"Kartoshkali vareniklar","unit_ru":"кор. (10 кг)","unit_uz":"quti (10 kg)","price":320000,
+     "comp_ru":"картофель, мука, лук, соль","comp_uz":"kartoshka, un, piyoz, tuz"},
+    {"id":4,"emoji":"🍗","name_ru":"Котлеты куриные","name_uz":"Tovuq kotletlari","unit_ru":"кор. (100 шт)","unit_uz":"quti (100 dona)","price":350000,
+     "comp_ru":"куриное филе, лук, хлеб, яйцо, специи","comp_uz":"tovuq filesi, piyoz, non, tuxum, ziravorlar"},
+    {"id":5,"emoji":"🥐","name_ru":"Самса замороженная","name_uz":"Muzlatilgan somsa","unit_ru":"кор. (60 шт)","unit_uz":"quti (60 dona)","price":330000,
+     "comp_ru":"мясо, лук, слоёное тесто","comp_uz":"go'sht, piyoz, qatlamali xamir"},
+    {"id":6,"emoji":"🍜","name_ru":"Лагман-лапша","name_uz":"Lag'mon lapshasi","unit_ru":"кор. (5 кг)","unit_uz":"quti (5 kg)","price":95000,
+     "comp_ru":"мука, вода, соль","comp_uz":"un, suv, tuz"}
+  ]
+}
