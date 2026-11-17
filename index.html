@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>Полуфабрикаты</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:0;padding:12px 12px 90px;background:var(--tg-theme-bg-color,#fff);color:var(--tg-theme-text-color,#000)}
+.card{display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:10px;border-radius:12px;background:var(--tg-theme-secondary-bg-color,#f2f2f2)}
+.emoji{font-size:34px}.info{flex:1}.price{opacity:.7;font-size:14px}
+.qty{display:flex;align-items:center;gap:10px}
+.qty button{width:34px;height:34px;border:0;border-radius:50%;font-size:20px;background:var(--tg-theme-button-color,#2481cc);color:var(--tg-theme-button-text-color,#fff)}
+input{width:100%;box-sizing:border-box;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #8884;font-size:16px}
+</style></head><body>
+<h2>🥟 Наши полуфабрикаты</h2>
+<div id="list"></div>
+<h3>Доставка</h3>
+<input id="phone" type="tel" placeholder="Телефон">
+<input id="address" placeholder="Адрес доставки">
+<script>
+const tg=Telegram.WebApp;tg.ready();tg.expand();
+let products=[],cart={};
+const fmt=n=>n.toLocaleString('ru').replace(/ /g,' ');
+fetch('products.json').then(r=>r.json()).then(p=>{products=p;render()});
+function render(){
+  document.getElementById('list').innerHTML=products.map(p=>`
+  <div class="card"><div class="emoji">${p.emoji}</div>
+  <div class="info"><b>${p.name}</b><div class="price">${fmt(p.price)} сум</div></div>
+  <div class="qty"><button onclick="chg(${p.id},-1)">−</button><span>${cart[p.id]||0}</span><button onclick="chg(${p.id},1)">+</button></div></div>`).join('');
+  const total=products.reduce((s,p)=>s+p.price*(cart[p.id]||0),0);
+  if(total>0){tg.MainButton.setText('Заказать — '+fmt(total)+' сум');tg.MainButton.show()}else tg.MainButton.hide();
+}
+function chg(id,d){cart[id]=Math.max(0,(cart[id]||0)+d);render()}
+tg.MainButton.onClick(()=>{
+  const phone=document.getElementById('phone').value.trim(),address=document.getElementById('address').value.trim();
+  if(!phone||!address){tg.showAlert('Укажите телефон и адрес');return}
+  const items=products.filter(p=>cart[p.id]).map(p=>({name:p.name,price:p.price,qty:cart[p.id]}));
+  tg.sendData(JSON.stringify({items,phone,address}));
+});
+</script></body></html>
